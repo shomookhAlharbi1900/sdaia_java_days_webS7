@@ -3,9 +3,11 @@ package org.example.Controller;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import org.example.dao.jobsDAO;
+import org.example.dto.jobsDto;
 import org.example.dto.jobsFilterDto;
 import org.example.models.jobs;
 
+import java.net.URI;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -44,15 +46,26 @@ public class jobsController {
      @Path("{Job_id}")
      public Response SELECT_ONE_id_job(@PathParam("Job_id") int Job_id) {
           try {
-                jo.SELECT_ONE_id_job(Job_id);
+               jobs jj =jo.SELECT_ONE_id_job(Job_id);
+//                jo.SELECT_ONE_id_job(Job_id);
                 if(headers.getAcceptableMediaTypes().contains(MediaType.valueOf(MediaType.APPLICATION_XML))) {
                     return Response
                             .ok(jo)
                             .type(MediaType.APPLICATION_XML)
                             .build();
                }
+                jobsDto dto = new jobsDto();
+                dto.setJob_id(jj.getJob_id());
+                dto.setJob_title(jj.getJob_title());
+                dto.setMin_salary(jj.getMin_salary());
+                dto.setMax_salary(jj.getMax_salary());
+                addLinks(dto);
+
+
+
+
                return Response
-                       .ok(jo, MediaType.APPLICATION_JSON)
+                       .ok(dto, MediaType.APPLICATION_JSON)
                        .build();
 
 
@@ -91,6 +104,16 @@ public class jobsController {
           } catch (Exception e) {
                throw new RuntimeException(e);
           }
+     }
+
+
+     private void addLinks(jobsDto dto) {
+          URI selfUri = uriInfo.getAbsolutePath();
+          URI empsUri = uriInfo.getAbsolutePathBuilder()
+                  .path(jobsController.class)
+                  .build();
+          dto.addLink(selfUri.toString(), "self");
+          dto.addLink(empsUri.toString(), "employees");
      }
 
 
